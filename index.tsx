@@ -612,7 +612,7 @@ function App() {
             <div className="container nav-content">
                 <div className="logo" onClick={() => handleNavigation('home')} style={{cursor: 'pointer'}}>
                     <img 
-                        src="download.png"
+                        src="/download.png"
                         alt="Kiran K & Associates Logo"
                         className="nav-logo-img" 
                     />
@@ -652,7 +652,7 @@ function App() {
                 <div className="mobile-menu-header">
                     <div className="logo">
                         <img 
-                            src="download.png"
+                            src="/download.png"
                             alt="Kiran K & Associates Logo"
                             className="nav-logo-img"
                         />
@@ -704,7 +704,7 @@ function App() {
                     <div className="footer-brand">
                         <div className="logo" style={{fontSize: '1.25rem'}}>
                             <img 
-                                src="download.png"
+                                src="/download.png"
                                 alt="Kiran K & Associates Logo"
                                 className="nav-logo-img"
                                 loading="lazy"
