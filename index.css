@@ -883,6 +883,45 @@ select.form-input option {
     color: var(--primary-teal);
 }
 
+/* Quick Links 3-Column Layout */
+.footer-quick-links {
+    flex: 2;
+}
+
+.quick-links-columns {
+    display: flex;
+    gap: 24px;
+}
+
+.quick-links-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-links-col a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.quick-links-col a:hover {
+    color: var(--primary-teal);
+}
+
+@media (max-width: 768px) {
+    .quick-links-columns {
+        flex-wrap: wrap;
+        gap: 16px 32px;
+    }
+    
+    .quick-links-col {
+        min-width: 80px;
+    }
+}
+
 .copyright {
     text-align: center;
     padding-top: 40px;

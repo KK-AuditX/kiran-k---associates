@@ -77,7 +77,7 @@ const CareerForm: React.FC = () => {
         );
         
         setTimeout(() => {
-            window.location.href = `mailto:kiran@kka.co.in?subject=${subject}&body=${body}`;
+            window.location.href = `mailto:ca.kirankrishna@gmail.com?subject=${subject}&body=${body}`;
             setStatus('success');
         }, 1000);
     };
@@ -595,7 +595,7 @@ function App() {
       
       // Simulate network delay for UX then open mail client
       setTimeout(() => {
-          window.location.href = `mailto:kiran@kka.co.in?subject=${subject}&body=${body}`;
+          window.location.href = `mailto:ca.kirankrishna@gmail.com?subject=${subject}&body=${body}`;
           setContactStatus('success');
           
           // Clear form
@@ -715,7 +715,18 @@ function App() {
                             </div>
                         </div>
                         <p>
-                            Bengaluru, Karnataka, India.<br />
+                            <a 
+                                href="https://maps.app.goo.gl/zBfn6gb6mMN6htCb9?g_st=awb" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{color: 'var(--text-secondary)', textDecoration: 'none'}}
+                            >
+                                #24, 1st Floor, Beside Sai Castle,<br />
+                                Balaji Layout, Kodigehalli,<br />
+                                Bangalore - 560092
+                            </a>
+                        </p>
+                        <p style={{marginTop: '12px'}}>
                             A future-ready firm combining financial expertise with digital trust.
                         </p>
                     </div>
@@ -727,26 +738,37 @@ function App() {
                             <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Virtual CFO</a></li>
                         </ul>
                     </div>
-                    <div className="footer-col">
+                    <div className="footer-col footer-quick-links">
                         <h4>Quick Links</h4>
-                        <div className="quick-links-grid">
-                            <a href="https://www.icai.org/" target="_blank" rel="noopener noreferrer">ICAI</a>
-                            <a href="https://www.rbi.org.in/" target="_blank" rel="noopener noreferrer">RBI</a>
-                            <a href="https://www.cert-in.org.in/" target="_blank" rel="noopener noreferrer">CERT-IN</a>
-                            <a href="https://www.icsi.edu/" target="_blank" rel="noopener noreferrer">ICSI</a>
-                            <a href="https://www.mca.gov.in/" target="_blank" rel="noopener noreferrer">MCA</a>
-                            <a href="https://www.isaca.org/" target="_blank" rel="noopener noreferrer">ISACA</a>
-                            <a href="https://icmai.in/" target="_blank" rel="noopener noreferrer">ICMAI</a>
-                            <a href="https://www.incometax.gov.in/iec/foportal/" target="_blank" rel="noopener noreferrer">Income Tax</a>
-                            <a href="https://www.gst.gov.in/" target="_blank" rel="noopener noreferrer">GST</a>
+                        <div className="quick-links-columns">
+                            <div className="quick-links-col">
+                                <a href="https://www.icai.org/" target="_blank" rel="noopener noreferrer">ICAI</a>
+                                <a href="https://www.icsi.edu/" target="_blank" rel="noopener noreferrer">ICSI</a>
+                                <a href="https://icmai.in/" target="_blank" rel="noopener noreferrer">ICMAI</a>
+                                <a href="https://www.isaca.org/" target="_blank" rel="noopener noreferrer">ISACA</a>
+                                <a href="https://www.theiia.org/" target="_blank" rel="noopener noreferrer">IIA</a>
+                            </div>
+                            <div className="quick-links-col">
+                                <a href="https://www.incometax.gov.in/iec/foportal/" target="_blank" rel="noopener noreferrer">Income Tax</a>
+                                <a href="https://www.gst.gov.in/" target="_blank" rel="noopener noreferrer">GST</a>
+                                <a href="https://www.mca.gov.in/" target="_blank" rel="noopener noreferrer">MCA</a>
+                                <a href="https://www.rbi.org.in/" target="_blank" rel="noopener noreferrer">RBI</a>
+                                <a href="https://www.sebi.gov.in/" target="_blank" rel="noopener noreferrer">SEBI</a>
+                            </div>
+                            <div className="quick-links-col">
+                                <a href="https://www.meity.gov.in/" target="_blank" rel="noopener noreferrer">MeitY</a>
+                                <a href="https://www.cert-in.org.in/" target="_blank" rel="noopener noreferrer">CERT-IN</a>
+                                <a href="https://www.nist.gov/" target="_blank" rel="noopener noreferrer">NIST</a>
+                                <a href="https://dpiit.gov.in/" target="_blank" rel="noopener noreferrer">DPIIT</a>
+                                <a href="https://www.nfrtonline.gov.in/NFSU/" target="_blank" rel="noopener noreferrer">NFSU</a>
+                            </div>
                         </div>
                     </div>
                     <div className="footer-col">
                         <h4>Connect</h4>
                         <ul>
-                            <li><a href="mailto:kiran@kka.co.in">kiran@kka.co.in</a></li>
+                            <li><a href="mailto:ca.kirankrishna@gmail.com">ca.kirankrishna@gmail.com</a></li>
                             <li><a href="https://www.linkedin.com/in/kiran-k-46b22516a/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
-                            <li><a href="#">Twitter</a></li>
                         </ul>
                     </div>
                 </div>
