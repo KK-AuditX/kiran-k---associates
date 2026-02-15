@@ -51,7 +51,7 @@ const CareerForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('sending');
         
@@ -62,32 +62,52 @@ const CareerForm: React.FC = () => {
         const experience = experienceRef.current?.value || '';
         const qualification = qualificationRef.current?.value || '';
         
-        // Construct mailto link for career application
-        const subject = encodeURIComponent(`Career Application: ${firstName} ${lastName}`);
-        const body = encodeURIComponent(
-            `CAREER APPLICATION\n` +
-            `==================\n\n` +
-            `Name: ${firstName} ${lastName}\n` +
-            `Email: ${email}\n` +
-            `Phone: ${phone}\n` +
-            `Experience: ${experience} years\n` +
-            `Qualification: ${qualification}\n` +
-            `Resume: ${fileName || 'Not uploaded'}\n\n` +
-            `Note: Please attach your resume to this email before sending.`
-        );
-        
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/career', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    experience,
+                    qualification,
+                    resumeNote: fileName ? false : true
+                }),
+            });
+            
+            if (response.ok) {
+                setStatus('success');
+            } else {
+                throw new Error('Failed to submit');
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            // Fallback to mailto if API fails
+            const subject = encodeURIComponent(`Career Application: ${firstName} ${lastName}`);
+            const body = encodeURIComponent(
+                `CAREER APPLICATION\n` +
+                `==================\n\n` +
+                `Name: ${firstName} ${lastName}\n` +
+                `Email: ${email}\n` +
+                `Phone: ${phone}\n` +
+                `Experience: ${experience} years\n` +
+                `Qualification: ${qualification}\n` +
+                `Resume: ${fileName || 'Not uploaded'}\n\n` +
+                `Note: Please attach your resume to this email before sending.`
+            );
             window.location.href = `mailto:ca.kirankrishna@gmail.com?subject=${subject}&body=${body}`;
             setStatus('success');
-        }, 1000);
+        }
     };
 
     if (status === 'success') {
         return (
             <div className="career-success-message fade-in">
                 <CheckCircleIcon />
-                <h3>Application Initiated!</h3>
-                <p>Your email client should have opened. Please attach your resume and send the email to complete your application.</p>
+                <h3>Application Submitted!</h3>
+                <p>Thank you for your application. We will review it and get back to you soon.</p>
                 <button className="btn-outline" onClick={() => { setStatus('idle'); setFileName(''); }} style={{marginTop: '20px'}}>Submit Another Response</button>
             </div>
         );
@@ -580,7 +600,7 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setContactStatus('sending');
 
@@ -589,12 +609,28 @@ function App() {
       const phone = phoneRef.current?.value || '';
       const query = queryRef.current?.value || '';
 
-      // Construct mailto link
-      const subject = encodeURIComponent(`Website Query from ${name}`);
-      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nQuery:\n${query}`);
-      
-      // Simulate network delay for UX then open mail client
-      setTimeout(() => {
+      try {
+          const response = await fetch('/api/contact', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, phone, query, type: 'contact' }),
+          });
+          
+          if (response.ok) {
+              setContactStatus('success');
+              // Clear form
+              if(nameRef.current) nameRef.current.value = '';
+              if(emailRef.current) emailRef.current.value = '';
+              if(phoneRef.current) phoneRef.current.value = '';
+              if(queryRef.current) queryRef.current.value = '';
+          } else {
+              throw new Error('Failed to submit');
+          }
+      } catch (error) {
+          console.error('Submission error:', error);
+          // Fallback to mailto if API fails
+          const subject = encodeURIComponent(`Website Query from ${name}`);
+          const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nQuery:\n${query}`);
           window.location.href = `mailto:ca.kirankrishna@gmail.com?subject=${subject}&body=${body}`;
           setContactStatus('success');
           
@@ -603,7 +639,7 @@ function App() {
           if(emailRef.current) emailRef.current.value = '';
           if(phoneRef.current) phoneRef.current.value = '';
           if(queryRef.current) queryRef.current.value = '';
-      }, 1000);
+      }
   };
 
   return (
@@ -714,18 +750,27 @@ function App() {
                                 <div style={{fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', fontWeight: 500, marginTop: '4px'}}>Chartered Accountants</div>
                             </div>
                         </div>
-                        <p>
-                            <a 
-                                href="https://maps.app.goo.gl/zBfn6gb6mMN6htCb9?g_st=awb" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                style={{color: 'var(--text-secondary)', textDecoration: 'none'}}
-                            >
-                                #24, 1st Floor, Beside Sai Castle,<br />
-                                Balaji Layout, Kodigehalli,<br />
-                                Bangalore - 560092
-                            </a>
+                        <p style={{color: 'var(--text-secondary)', lineHeight: '1.6'}}>
+                            #24, 1st Floor, Beside Sai Castle,<br />
+                            Balaji Layout, Kodigehalli,<br />
+                            Bangalore - 560092
                         </p>
+                        <a 
+                            href="https://maps.app.goo.gl/zBfn6gb6mMN6htCb9?g_st=awb" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                color: 'var(--primary-teal)',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                                marginTop: '8px'
+                            }}
+                        >
+                            📍 View on Google Maps
+                        </a>
                         <p style={{marginTop: '12px'}}>
                             A future-ready firm combining financial expertise with digital trust.
                         </p>
