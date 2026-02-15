@@ -31,23 +31,23 @@ Modern, responsive website for **Kiran K & Associates**, a forward-thinking Char
 ## 📸 Screenshots
 
 ### Hero Section
-![Hero Section](screenshots/hero.png)
+![Hero Section](https://images.unsplash.com/photo-1639322537228-f710d846310a?w=800&h=400&fit=crop)
 *Landing page with animated network connector background*
 
 ### Services Section
-![Services](screenshots/services.png)
+![Services](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop)
 *Core service offerings with modern card design*
 
 ### Blog Section
-![Blog](screenshots/blog.png)
+![Blog](https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=400&fit=crop)
 *Markdown-based blog system for industry insights*
 
 ### Contact Form
-![Contact](screenshots/contact.png)
+![Contact](https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=800&h=400&fit=crop)
 *Professional contact form for client inquiries*
 
 ### Careers Page
-![Careers](screenshots/careers.png)
+![Careers](https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=400&fit=crop)
 *Job application portal with resume upload*
 
 ---
