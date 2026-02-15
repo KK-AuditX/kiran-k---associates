@@ -38,9 +38,9 @@ Modern, responsive website for **Kiran K & Associates**, a forward-thinking Char
 ![Services](screenshots/services.png)
 *Core service offerings with modern card design*
 
-### Blog Section
-![Blog](screenshots/blog.png)
-*Markdown-based blog system for industry insights*
+### About Us 
+![About Us](screenshots/about_us.png)
+*Company overview and team introduction*
 
 ### Contact Form
 ![Contact](screenshots/contact.png)
