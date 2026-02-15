@@ -43,7 +43,7 @@ Modern, responsive website for **Kiran K & Associates**, a forward-thinking Char
 *Company overview and team introduction*
 
 ### Blog
-![Blog](screenshots/blogs.png)
+![Blog](screenshots/blog.png)
 *Markdown-based blog system for industry insights* 
 
 ### Contact Form
