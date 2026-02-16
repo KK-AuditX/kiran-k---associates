@@ -805,7 +805,7 @@ function App() {
                                 <a href="https://www.cert-in.org.in/" target="_blank" rel="noopener noreferrer">CERT-IN</a>
                                 <a href="https://www.nist.gov/" target="_blank" rel="noopener noreferrer">NIST</a>
                                 <a href="https://dpiit.gov.in/" target="_blank" rel="noopener noreferrer">DPIIT</a>
-                                <a href="https://www.nfrtonline.gov.in/NFSU/" target="_blank" rel="noopener noreferrer">NFSU</a>
+                                <a href="https://www.nfsu.ac.in/Programs/programinfo/26?deptid=63" target="_blank" rel="noopener noreferrer">NFSU</a>
                             </div>
                         </div>
                     </div>
