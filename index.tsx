@@ -201,7 +201,7 @@ const CareerForm: React.FC = () => {
 
 // --- Sub-Components for Pages ---
 
-const HomePage = ({ onContactSubmit, contactStatus, onResetContact, nameRef, emailRef, phoneRef, queryRef, scrollToSection, onBlogClick }: any) => {
+const HomePage = ({ onContactSubmit, contactStatus, contactErrorMessage, onResetContact, onResetContactError, nameRef, emailRef, phoneRef, queryRef, scrollToSection, onBlogClick }: any) => {
     return (
         <>
         <section id="hero" className="hero-section">
@@ -390,7 +390,7 @@ const HomePage = ({ onContactSubmit, contactStatus, onResetContact, nameRef, ema
                             <div className="career-error-message fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
                                 <h3 style={{ color: '#ef4444', marginTop: 0 }}>⚠️ Error Sending Message</h3>
                                 <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>{contactErrorMessage}</p>
-                                <button className="btn-outline" onClick={() => setContactStatus('idle')} style={{marginTop: '10px'}}>Try Again</button>
+                                <button className="btn-outline" onClick={onResetContactError} style={{marginTop: '10px'}}>Try Again</button>
                             </div>
                         ) : (
                             <form className="contact-form fade-in" onSubmit={onContactSubmit}>
@@ -723,7 +723,9 @@ function App() {
             <HomePage 
                 onContactSubmit={handleContactSubmit}
                 contactStatus={contactStatus}
+                contactErrorMessage={contactErrorMessage}
                 onResetContact={() => setContactStatus('idle')}
+                onResetContactError={() => setContactStatus('idle')}
                 nameRef={nameRef}
                 emailRef={emailRef}
                 phoneRef={phoneRef}
