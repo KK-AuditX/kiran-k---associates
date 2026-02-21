@@ -21,17 +21,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Create transporter using Gmail
+    // Check for email configuration
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+        return res.status(500).json({ error: 'Email service not configured. Please set EMAIL_USER and EMAIL_PASSWORD in environment variables.' });
+    }
+
+    // Create transporter using Zoho or Gmail
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: process.env.SMTP_HOST || 'smtp.zoho.in',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true' ? true : false,
         auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
         },
     });
 
     const mailOptions = {
-        from: process.env.GMAIL_USER,
+        from: process.env.EMAIL_USER,
         to: 'Kiran@kka.co.in',
         replyTo: email,
         subject: `[KKA Website] ${type === 'career' ? 'Career Application' : 'Contact Query'} from ${name}`,
@@ -64,6 +71,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ success: true, message: 'Email sent successfully' });
     } catch (error) {
         console.error('Email error:', error);
-        return res.status(500).json({ error: 'Failed to send email' });
+        return res.status(500).json({ error: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}` });
     }
 }
