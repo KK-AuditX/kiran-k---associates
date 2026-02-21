@@ -33,7 +33,8 @@ import {
 
 // --- Career Form Component (Inline) ---
 const CareerForm: React.FC = () => {
-    const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+    const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState<string>('');
     const [fileName, setFileName] = useState<string>('');
     
     // Form refs for collecting data
@@ -54,6 +55,7 @@ const CareerForm: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('sending');
+        setErrorMessage('');
         
         const firstName = firstNameRef.current?.value || '';
         const lastName = lastNameRef.current?.value || '';
@@ -79,26 +81,18 @@ const CareerForm: React.FC = () => {
             
             if (response.ok) {
                 setStatus('success');
+                setErrorMessage('');
             } else {
-                throw new Error('Failed to submit');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit application');
             }
         } catch (error) {
             console.error('Submission error:', error);
-            // Fallback to mailto if API fails
-            const subject = encodeURIComponent(`Career Application: ${firstName} ${lastName}`);
-            const body = encodeURIComponent(
-                `CAREER APPLICATION\n` +
-                `==================\n\n` +
-                `Name: ${firstName} ${lastName}\n` +
-                `Email: ${email}\n` +
-                `Phone: ${phone}\n` +
-                `Experience: ${experience} years\n` +
-                `Qualification: ${qualification}\n` +
-                `Resume: ${fileName || 'Not uploaded'}\n\n` +
-                `Note: Please attach your resume to this email before sending.`
+            setStatus('error');
+            setErrorMessage(
+                `Unable to send application: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+                `Please ensure environment variables are configured. See EMAIL_SETUP_GUIDE.md for help.`
             );
-            window.location.href = `mailto:Kiran@kka.co.in?subject=${subject}&body=${body}`;
-            setStatus('success');
         }
     };
 
@@ -109,6 +103,16 @@ const CareerForm: React.FC = () => {
                 <h3>Application Submitted!</h3>
                 <p>Thank you for your application. We will review it and get back to you soon.</p>
                 <button className="btn-outline" onClick={() => { setStatus('idle'); setFileName(''); }} style={{marginTop: '20px'}}>Submit Another Response</button>
+            </div>
+        );
+    }
+
+    if (status === 'error') {
+        return (
+            <div className="career-error-message fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+                <h3 style={{ color: '#ef4444', marginTop: 0 }}>⚠️ Error Submitting Application</h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>{errorMessage}</p>
+                <button className="btn-outline" onClick={() => { setStatus('idle'); setErrorMessage(''); }} style={{marginTop: '10px'}}>Try Again</button>
             </div>
         );
     }
@@ -189,7 +193,7 @@ const CareerForm: React.FC = () => {
             </div>
 
             <button type="submit" className="btn-primary submit-btn" disabled={status === 'sending'}>
-                {status === 'sending' ? 'Opening Email Client...' : 'Submit Application'}
+                {status === 'sending' ? 'Sending Application...' : 'Submit Application'}
             </button>
         </form>
     );
@@ -382,6 +386,12 @@ const HomePage = ({ onContactSubmit, contactStatus, onResetContact, nameRef, ema
                                 <p>Thank you for reaching out. We'll get back to you shortly.</p>
                                 <button className="btn-outline" onClick={onResetContact} style={{marginTop: '20px'}}>Send Another Message</button>
                             </div>
+                        ) : contactStatus === 'error' ? (
+                            <div className="career-error-message fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+                                <h3 style={{ color: '#ef4444', marginTop: 0 }}>⚠️ Error Sending Message</h3>
+                                <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>{contactErrorMessage}</p>
+                                <button className="btn-outline" onClick={() => setContactStatus('idle')} style={{marginTop: '10px'}}>Try Again</button>
+                            </div>
                         ) : (
                             <form className="contact-form fade-in" onSubmit={onContactSubmit}>
                                 <div className="form-row">
@@ -512,7 +522,8 @@ function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [contactErrorMessage, setContactErrorMessage] = useState<string>('');
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   // Contact Form Refs
@@ -603,6 +614,7 @@ function App() {
   const handleContactSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setContactStatus('sending');
+      setContactErrorMessage('');
 
       const name = nameRef.current?.value || '';
       const email = emailRef.current?.value || '';
@@ -618,27 +630,23 @@ function App() {
           
           if (response.ok) {
               setContactStatus('success');
+              setContactErrorMessage('');
               // Clear form
               if(nameRef.current) nameRef.current.value = '';
               if(emailRef.current) emailRef.current.value = '';
               if(phoneRef.current) phoneRef.current.value = '';
               if(queryRef.current) queryRef.current.value = '';
           } else {
-              throw new Error('Failed to submit');
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Failed to send message');
           }
       } catch (error) {
           console.error('Submission error:', error);
-          // Fallback to mailto if API fails
-          const subject = encodeURIComponent(`Website Query from ${name}`);
-          const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nQuery:\n${query}`);
-          window.location.href = `mailto:Kiran@kka.co.in?subject=${subject}&body=${body}`;
-          setContactStatus('success');
-          
-          // Clear form
-          if(nameRef.current) nameRef.current.value = '';
-          if(emailRef.current) emailRef.current.value = '';
-          if(phoneRef.current) phoneRef.current.value = '';
-          if(queryRef.current) queryRef.current.value = '';
+          setContactStatus('error');
+          setContactErrorMessage(
+              `Unable to send message: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+              `Please ensure environment variables are configured. See EMAIL_SETUP_GUIDE.md for help.`
+          );
       }
   };
 
