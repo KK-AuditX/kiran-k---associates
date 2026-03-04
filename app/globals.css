@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ──────────────────────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-primary:  #0F172A;
+  --color-accent:   #00A676;
+  --color-neutral:  #F8FAFC;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Transitions */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-base: 220ms;
+}
+
+/* ─── Base resets ────────────────────────────────────────────────────────────── */
+html {
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--color-neutral);
+  color: var(--color-primary);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ─── Focus styles (WCAG AA) ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── Text selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(0, 166, 118, 0.15);
+  color: var(--color-primary);
+}
+
+/* ─── Custom scrollbar ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #F8FAFC; }
+::-webkit-scrollbar-thumb { background: #c9d5e4; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9aafc5; }
+
+/* ─── Smooth image loading ────────────────────────────────────────────────────── */
+img { display: block; max-width: 100%; }
+
+/* ─── Prose typography overrides ─────────────────────────────────────────────── */
+.prose h2 { @apply text-2xl font-bold text-primary mt-10 mb-4; }
+.prose h3 { @apply text-xl font-semibold text-primary mt-8 mb-3; }
+.prose p  { @apply text-ink-muted leading-relaxed mb-5; }
+.prose blockquote {
+  @apply border-l-4 border-accent-500 pl-5 italic text-ink-muted;
+}
+.prose strong { @apply text-primary font-semibold; }
+.prose a      { @apply text-accent-500 hover:text-accent-600 underline-offset-2; }
+.prose code   {
+  @apply rounded bg-neutral-50 px-1.5 py-0.5 text-sm font-mono text-primary;
+  font-size: 0.875em;
+}
+
+/* ─── Utility: container ─────────────────────────────────────────────────────── */
+.site-container {
+  @apply mx-auto w-full max-w-site px-4 sm:px-6 lg:px-8;
+}
+
+/* ─── Utility: section base padding ──────────────────────────────────────────── */
+.section-padding {
+  @apply py-20 sm:py-28;
+}
+
+/* ─── Animate on scroll helper ───────────────────────────────────────────────── */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s var(--ease-smooth), transform 0.5s var(--ease-smooth);
+}
+.animate-on-scroll.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
