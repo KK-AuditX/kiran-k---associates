@@ -207,10 +207,6 @@ const HomePage = ({ onContactSubmit, contactStatus, contactErrorMessage, onReset
         <section id="hero" className="hero-section">
             <NetworkConnectorBackground intensity={1} />
             <div className="hero-content">
-                <div className="hero-pill">
-                    <ShieldCheckIcon /> 
-                    <span>ISO 27001 Certified Practices</span>
-                </div>
                 <h1 className="hero-headline">
                     Future-Ready Financial<br />Intelligence & Compliance.
                 </h1>
@@ -499,16 +495,49 @@ const BlogDetailPage = ({ blog, onBack }: { blog: BlogPost, onBack: () => void }
                         borderRadius: '20px',
                         padding: '40px' 
                     }}>
-                        {blog.content.map((paragraph, index) => (
-                            <p key={index} style={{ 
-                                color: 'var(--text-secondary)', 
-                                lineHeight: '1.8', 
-                                marginBottom: '24px', 
-                                fontSize: '1.1rem' 
-                            }}>
-                                {paragraph}
-                            </p>
-                        ))}
+                        {blog.content.map((paragraph, index) => {
+                            if (paragraph.startsWith('## ')) {
+                                const lines = paragraph.split('\n');
+                                const headingText = lines[0].replace(/^##\s+/, '');
+                                const rest = lines.slice(1).join('\n').trim();
+                                return (
+                                    <React.Fragment key={index}>
+                                        <h2 style={{
+                                            fontSize: '1.5rem',
+                                            fontWeight: 700,
+                                            color: 'var(--text-primary)',
+                                            marginTop: index === 0 ? '0' : '36px',
+                                            marginBottom: '12px',
+                                            lineHeight: 1.3,
+                                            borderBottom: '1px solid var(--glass-border)',
+                                            paddingBottom: '8px'
+                                        }}>
+                                            {headingText}
+                                        </h2>
+                                        {rest && (
+                                            <p style={{
+                                                color: 'var(--text-secondary)',
+                                                lineHeight: '1.8',
+                                                marginBottom: '24px',
+                                                fontSize: '1.1rem'
+                                            }}>
+                                                {rest}
+                                            </p>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            }
+                            return (
+                                <p key={index} style={{
+                                    color: 'var(--text-secondary)',
+                                    lineHeight: '1.8',
+                                    marginBottom: '24px',
+                                    fontSize: '1.1rem'
+                                }}>
+                                    {paragraph}
+                                </p>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
