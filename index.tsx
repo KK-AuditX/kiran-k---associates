@@ -298,10 +298,16 @@ const HomePage = ({ onContactSubmit, contactStatus, contactErrorMessage, onReset
                     <div className="blogs-grid">
                         {BLOG_POSTS.map(blog => (
                             <div key={blog.id} className="blog-card" onClick={() => onBlogClick(blog)} style={{cursor: 'pointer'}} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onBlogClick(blog); }}>
-                                <div className="blog-date">{blog.date}</div>
-                                <h3>{blog.title}</h3>
-                                <p>{blog.summary}</p>
-                                <a href="#" className="read-more" onClick={(e) => { e.preventDefault(); onBlogClick(blog); }}>Read Insight <ArrowRightIcon /></a>
+                                {blog.image && (
+                                    <div className="blog-card-image">
+                                        <img src={blog.image} alt={blog.title} loading="lazy" />
+                                    </div>
+                                )}
+                                <div className="blog-card-content">
+                                    <h3>{blog.title}</h3>
+                                    <p>{blog.summary}</p>
+                                    <a href="#" className="read-more" onClick={(e) => { e.preventDefault(); onBlogClick(blog); }}>Read Insight <ArrowRightIcon /></a>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -487,7 +493,6 @@ const BlogDetailPage = ({ blog, onBack }: { blog: BlogPost, onBack: () => void }
                 </button>
                 
                 <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                    <div style={{ marginBottom: '16px', color: 'var(--primary-teal)', fontWeight: 600 }}>{blog.date}</div>
                     <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '24px', lineHeight: 1.2 }}>{blog.title}</h1>
                     <div style={{ 
                         background: 'var(--glass-surface)', 
@@ -496,6 +501,7 @@ const BlogDetailPage = ({ blog, onBack }: { blog: BlogPost, onBack: () => void }
                         padding: '40px' 
                     }}>
                         {blog.content.map((paragraph, index) => {
+                            // Handle ## headings (main sections)
                             if (paragraph.startsWith('## ')) {
                                 const lines = paragraph.split('\n');
                                 const headingText = lines[0].replace(/^##\s+/, '');
@@ -527,6 +533,89 @@ const BlogDetailPage = ({ blog, onBack }: { blog: BlogPost, onBack: () => void }
                                     </React.Fragment>
                                 );
                             }
+                            // Handle ### headings (sub-sections)
+                            if (paragraph.startsWith('### ')) {
+                                const lines = paragraph.split('\n');
+                                const headingText = lines[0].replace(/^###\s+/, '');
+                                const rest = lines.slice(1).join('\n').trim();
+                                return (
+                                    <React.Fragment key={index}>
+                                        <h3 style={{
+                                            fontSize: '1.2rem',
+                                            fontWeight: 600,
+                                            color: 'var(--primary-teal)',
+                                            marginTop: '24px',
+                                            marginBottom: '12px',
+                                            paddingLeft: '16px',
+                                            borderLeft: '3px solid var(--primary-teal)',
+                                            lineHeight: 1.4
+                                        }}>
+                                            {headingText}
+                                        </h3>
+                                        {rest && (
+                                            <p style={{
+                                                color: 'var(--text-secondary)',
+                                                lineHeight: '1.8',
+                                                marginBottom: '24px',
+                                                fontSize: '1.1rem'
+                                            }}>
+                                                {rest}
+                                            </p>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            }
+                            // Check if paragraph contains ### headings inline
+                            if (paragraph.includes('\n### ')) {
+                                const parts = paragraph.split(/\n(?=### )/);
+                                return (
+                                    <React.Fragment key={index}>
+                                        {parts.map((part, partIndex) => {
+                                            if (part.startsWith('### ')) {
+                                                const lines = part.split('\n');
+                                                const headingText = lines[0].replace(/^###\s+/, '');
+                                                const rest = lines.slice(1).join('\n').trim();
+                                                return (
+                                                    <React.Fragment key={`${index}-${partIndex}`}>
+                                                        <h3 style={{
+                                                            fontSize: '1.2rem',
+                                                            fontWeight: 600,
+                                                            color: 'var(--primary-teal)',
+                                                            marginTop: '24px',
+                                                            marginBottom: '12px',
+                                                            paddingLeft: '16px',
+                                                            borderLeft: '3px solid var(--primary-teal)',
+                                                            lineHeight: 1.4
+                                                        }}>
+                                                            {headingText}
+                                                        </h3>
+                                                        {rest && (
+                                                            <p style={{
+                                                                color: 'var(--text-secondary)',
+                                                                lineHeight: '1.8',
+                                                                marginBottom: '24px',
+                                                                fontSize: '1.1rem'
+                                                            }}>
+                                                                {rest}
+                                                            </p>
+                                                        )}
+                                                    </React.Fragment>
+                                                );
+                                            }
+                                            return part.trim() ? (
+                                                <p key={`${index}-${partIndex}`} style={{
+                                                    color: 'var(--text-secondary)',
+                                                    lineHeight: '1.8',
+                                                    marginBottom: '24px',
+                                                    fontSize: '1.1rem'
+                                                }}>
+                                                    {part}
+                                                </p>
+                                            ) : null;
+                                        })}
+                                    </React.Fragment>
+                                );
+                            }
                             return (
                                 <p key={index} style={{
                                     color: 'var(--text-secondary)',
@@ -545,9 +634,359 @@ const BlogDetailPage = ({ blog, onBack }: { blog: BlogPost, onBack: () => void }
     );
 };
 
+// --- Blog Modal Component ---
+const BlogModal = ({ blog, onClose }: { blog: BlogPost | null, onClose: () => void }) => {
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const bodyRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (blog) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [blog]);
+
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (blog) {
+            window.addEventListener('keydown', handleEsc);
+        }
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [blog, onClose]);
+
+    const handleScroll = () => {
+        if (bodyRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = bodyRef.current;
+            const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
+            setScrollProgress(Math.min(progress, 100));
+        }
+    };
+
+    if (!blog) return null;
+
+    // Calculate reading time (average 200 words per minute)
+    const wordCount = blog.content.join(' ').split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+    return (
+        <div 
+            className="blog-modal-overlay" 
+            onClick={onClose}
+        >
+            {/* Decorative background elements */}
+            <div className="blog-modal-glow blog-modal-glow-1" />
+            <div className="blog-modal-glow blog-modal-glow-2" />
+            
+            <div 
+                className="blog-modal-content" 
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Reading Progress Bar */}
+                <div className="blog-modal-progress">
+                    <div 
+                        className="blog-modal-progress-bar" 
+                        style={{ width: `${scrollProgress}%` }}
+                    />
+                </div>
+
+                <button 
+                    className="blog-modal-close" 
+                    onClick={onClose}
+                    aria-label="Close modal"
+                >
+                    <XIcon />
+                </button>
+
+                <div className="blog-modal-header">
+                    {blog.image && (
+                        <div className="blog-modal-image">
+                            <img src={blog.image} alt={blog.title} />
+                            <div className="blog-modal-image-overlay" />
+                        </div>
+                    )}
+                    <div className="blog-modal-header-content">
+                        <div className="blog-modal-meta">
+                            <span className="blog-modal-badge">Insight</span>
+                            <span className="blog-modal-reading-time">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                {readingTime} min read
+                            </span>
+                        </div>
+                        <h2>{blog.title}</h2>
+                        <p className="blog-modal-summary">{blog.summary}</p>
+                    </div>
+                </div>
+
+                <div className="blog-modal-divider">
+                    <div className="blog-modal-divider-line" />
+                    <div className="blog-modal-divider-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                    </div>
+                    <div className="blog-modal-divider-line" />
+                </div>
+
+                <div 
+                    className="blog-modal-body" 
+                    ref={bodyRef}
+                    onScroll={handleScroll}
+                >
+                    {blog.content.map((paragraph, index) => {
+                        // Handle ## headings (main sections)
+                        if (paragraph.startsWith('## ')) {
+                            const lines = paragraph.split('\n');
+                            const headingText = lines[0].replace(/^##\s+/, '');
+                            const rest = lines.slice(1).join('\n').trim();
+                            return (
+                                <React.Fragment key={index}>
+                                    <h3 className="blog-modal-section-title">
+                                        <span className="blog-modal-section-number">{String(index + 1).padStart(2, '0')}</span>
+                                        {headingText}
+                                    </h3>
+                                    {rest && (
+                                        <p className="blog-modal-paragraph">{rest}</p>
+                                    )}
+                                </React.Fragment>
+                            );
+                        }
+                        // Handle ### headings (sub-sections)
+                        if (paragraph.startsWith('### ')) {
+                            const lines = paragraph.split('\n');
+                            const headingText = lines[0].replace(/^###\s+/, '');
+                            const rest = lines.slice(1).join('\n').trim();
+                            return (
+                                <React.Fragment key={index}>
+                                    <h4 className="blog-modal-subsection-title">
+                                        {headingText}
+                                    </h4>
+                                    {rest && (
+                                        <p className="blog-modal-paragraph">{rest}</p>
+                                    )}
+                                </React.Fragment>
+                            );
+                        }
+                        // Check if paragraph contains ### headings inline
+                        if (paragraph.includes('\n### ')) {
+                            const parts = paragraph.split(/\n(?=### )/);
+                            return (
+                                <React.Fragment key={index}>
+                                    {parts.map((part, partIndex) => {
+                                        if (part.startsWith('### ')) {
+                                            const lines = part.split('\n');
+                                            const headingText = lines[0].replace(/^###\s+/, '');
+                                            const rest = lines.slice(1).join('\n').trim();
+                                            return (
+                                                <React.Fragment key={`${index}-${partIndex}`}>
+                                                    <h4 className="blog-modal-subsection-title">
+                                                        {headingText}
+                                                    </h4>
+                                                    {rest && (
+                                                        <p className="blog-modal-paragraph">{rest}</p>
+                                                    )}
+                                                </React.Fragment>
+                                            );
+                                        }
+                                        return part.trim() ? (
+                                            <p key={`${index}-${partIndex}`} className="blog-modal-paragraph">
+                                                {part}
+                                            </p>
+                                        ) : null;
+                                    })}
+                                </React.Fragment>
+                            );
+                        }
+                        return (
+                            <p key={index} className="blog-modal-paragraph">
+                                {paragraph}
+                            </p>
+                        );
+                    })}
+
+                    <div className="blog-modal-footer">
+                        <div className="blog-modal-footer-line" />
+                        <p>Thank you for reading</p>
+                        <button className="btn-outline blog-modal-cta" onClick={onClose}>
+                            Back to Insights
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Services Page ---
+const ServicesPage = () => {
+    return (
+        <div style={{ paddingTop: '140px', minHeight: '80vh', paddingBottom: '80px', position: 'relative' }}>
+            <NetworkConnectorBackground intensity={0.5} interactive={false} />
+            <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+                <span className="section-subtitle">Our Expertise</span>
+                <h2 className="section-title">Strategic Solutions for the Digital Era</h2>
+                
+                <div className="services-grid">
+                    <div className="service-card">
+                        <div className="card-icon"><ShieldCheckIcon /></div>
+                        <h3>Information System Audit (ISA)</h3>
+                        <p>Comprehensive assessment of your IT infrastructure, ensuring data integrity, security compliance, and resilience against cyber threats.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><FileSearchIcon /></div>
+                        <h3>Forensic Accounting</h3>
+                        <p>Advanced financial investigation to detect fraud, analyze complex data trails, and provide litigation support for digital enterprises.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><BrainCircuitIcon /></div>
+                        <h3>AI & Process Automation</h3>
+                        <p>Leveraging Artificial Intelligence to streamline financial workflows, automate tax compliance, and generate predictive financial insights.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><TrendingUpIcon /></div>
+                        <h3>Virtual CFO</h3>
+                        <p>Strategic financial leadership for startups and growth-stage companies. We handle the numbers so you can focus on scale.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><BuildingIcon /></div>
+                        <h3>Internal & Statutory Audit</h3>
+                        <p>Rigorous, independent examination of financial statements ensuring transparency and adherence to global accounting standards.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><CalculatorIcon /></div>
+                        <h3>Accounting</h3>
+                        <p>End-to-end bookkeeping and accounting services to ensure your financial records are accurate, up-to-date, and compliant.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><ClipboardListIcon /></div>
+                        <h3>Compliances</h3>
+                        <p>Handling all regulatory filings and corporate governance requirements to keep your business penalty-free and legally sound.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><CoinsIcon /></div>
+                        <h3>Taxation</h3>
+                        <p>Expert direct and indirect tax planning, filing, and dispute resolution to optimize liabilities and ensure full statutory compliance.</p>
+                    </div>
+
+                    <div className="service-card">
+                        <div className="card-icon"><LightbulbIcon /></div>
+                        <h3>Advisory</h3>
+                        <p>Strategic business consulting, deal structuring, and financial guidance to help navigate complex growth and investment decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Blogs Page ---
+const BlogsPage = ({ onBlogClick }: { onBlogClick: (blog: BlogPost) => void }) => {
+    return (
+        <div style={{ paddingTop: '140px', minHeight: '80vh', paddingBottom: '80px', position: 'relative' }}>
+            <NetworkConnectorBackground intensity={0.3} interactive={false} />
+            <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+                <span className="section-subtitle">Insights</span>
+                <h2 className="section-title">Thought Leadership</h2>
+                
+                {BLOG_POSTS.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '60px 20px' }}>
+                        <p>No blog posts available at the moment. Check back soon!</p>
+                    </div>
+                ) : (
+                    <div className="blogs-grid">
+                        {BLOG_POSTS.map(blog => (
+                            <div key={blog.id} className="blog-card" onClick={() => onBlogClick(blog)} style={{cursor: 'pointer'}} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onBlogClick(blog); }}>
+                                {blog.image && (
+                                    <div className="blog-card-image">
+                                        <img src={blog.image} alt={blog.title} loading="lazy" />
+                                    </div>
+                                )}
+                                <div className="blog-card-content">
+                                    <h3>{blog.title}</h3>
+                                    <p>{blog.summary}</p>
+                                    <a href="#" className="read-more" onClick={(e) => { e.preventDefault(); onBlogClick(blog); }}>Read Insight <ArrowRightIcon /></a>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// --- About Page ---
+const AboutPage = () => {
+    return (
+        <div style={{ paddingTop: '140px', minHeight: '80vh', paddingBottom: '80px', position: 'relative' }}>
+            <NetworkConnectorBackground intensity={0.3} interactive={false} />
+            <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+                <div className="about-text-content" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+                    <h2 style={{ fontSize: '3.8rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.1 }}>
+                        Kiran.K
+                    </h2>
+                    <h3 style={{ 
+                        fontSize: '2.2rem', 
+                        fontWeight: 600, 
+                        color: 'var(--primary-teal)', 
+                        marginBottom: '2.5rem',
+                        letterSpacing: '1px'
+                    }}>
+                        Managing Partner in Finance and audit
+                    </h3>
+
+                    <p className="about-quote" style={{ fontSize: '1.5rem', fontStyle: 'italic', marginBottom: '2.5rem' }}>
+                        "A multidimensional leader blending financial expertise with advanced technical proficiency in Information Systems and AI."
+                    </p>
+                
+                    <div className="about-paragraphs" style={{ fontSize: '1.2rem', lineHeight: 1.8, maxWidth: '760px', margin: '0 auto 3rem' }}>
+                        <p>
+                            Kiran K represents a new breed of Chartered Accountants who understand that in a digital world, financial oversight must be technological oversight.
+                        </p>
+                        <p>
+                            With a unique blend of traditional CA rigour and cutting-edge certifications in Information Systems Audit and Forensic Accounting, he leads the firm with a vision to modernize the Indian financial compliance landscape.
+                        </p>
+                    </div>
+                
+                    <div className="credentials-section" style={{ marginBottom: '2.5rem' }}>
+                        <h4 style={{ fontSize: '1.4rem', marginBottom: '1.2rem' }}>CREDENTIALS & CERTIFICATIONS</h4>
+                        <div className="badges-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
+                            <span className="badge">CA</span>
+                            <span className="badge">CS</span>
+                            <span className="badge">ISA 3.0</span>
+                            <span className="badge">FAFD</span>
+                            <span className="badge">AICA L2</span>
+                        </div>
+                    </div>
+
+                    <div className="specialties-list" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                        <div className="specialty-item"><span className="icon-wrapper"><CheckCircleIcon /></span> Expert in Forensic Audit & Fraud Detection</div>
+                        <div className="specialty-item"><span className="icon-wrapper"><CheckCircleIcon /></span> Specialist in Information Systems Audit (ISA)</div>
+                        <div className="specialty-item"><span className="icon-wrapper"><CheckCircleIcon /></span> Pioneer in AI-driven Financial Automations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function App() {
-  const [view, setView] = useState<'home' | 'careers' | 'blog-detail'>('home');
+  const [view, setView] = useState<'home' | 'careers' | 'blog-detail' | 'services' | 'blogs' | 'about'>('home');
   const [selectedBlog, setSelectedBlog] = useState<BlogPost | null>(null);
+  const [modalBlog, setModalBlog] = useState<BlogPost | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -575,6 +1014,12 @@ function App() {
     const baseTitle = 'Kiran K & Associates | Chartered Accountants';
     if (view === 'careers') {
       document.title = `Careers - ${baseTitle}`;
+    } else if (view === 'services') {
+      document.title = `Services - ${baseTitle}`;
+    } else if (view === 'blogs') {
+      document.title = `Blogs - ${baseTitle}`;
+    } else if (view === 'about') {
+      document.title = `About Us - ${baseTitle}`;
     } else if (view === 'blog-detail' && selectedBlog) {
       document.title = `${selectedBlog.title} - ${baseTitle}`;
     } else {
@@ -630,14 +1075,18 @@ function App() {
         }
     } else if (target === 'careers') {
         setView('careers');
+    } else if (target === 'services') {
+        setView('services');
+    } else if (target === 'blogs') {
+        setView('blogs');
+    } else if (target === 'about') {
+        setView('about');
     }
     setMobileMenuOpen(false);
   };
 
   const handleBlogClick = (blog: BlogPost) => {
-      setSelectedBlog(blog);
-      setView('blog-detail');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setModalBlog(blog);
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -681,7 +1130,7 @@ function App() {
 
   return (
     <>
-        <nav className={`navbar ${isScrolled || view === 'careers' || view === 'blog-detail' ? 'scrolled' : ''}`}>
+        <nav className={`navbar ${isScrolled || view !== 'home' ? 'scrolled' : ''}`}>
             <div className="container nav-content">
                 <div className="logo" onClick={() => handleNavigation('home')} style={{cursor: 'pointer'}}>
                     <img 
@@ -697,9 +1146,10 @@ function App() {
                 
                 {/* Desktop Navigation */}
                 <div className="nav-links">
-                    <a href="#services" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Services</a>
-                    <a href="#blogs" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'blogs'); }}>Blogs</a>
-                    <a href="#about" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'about'); }}>About Us</a>
+                    <a href="#home" onClick={(e) => { e.preventDefault(); handleNavigation('home'); }} className={view === 'home' ? 'active-link' : ''} style={view === 'home' ? {color: 'var(--primary-teal)'} : {}}>Home</a>
+                    <a href="#services" onClick={(e) => { e.preventDefault(); handleNavigation('services'); }} className={view === 'services' ? 'active-link' : ''} style={view === 'services' ? {color: 'var(--primary-teal)'} : {}}>Services</a>
+                    <a href="#blogs" onClick={(e) => { e.preventDefault(); handleNavigation('blogs'); }} className={view === 'blogs' || view === 'blog-detail' ? 'active-link' : ''} style={view === 'blogs' || view === 'blog-detail' ? {color: 'var(--primary-teal)'} : {}}>Blogs</a>
+                    <a href="#about" onClick={(e) => { e.preventDefault(); handleNavigation('about'); }} className={view === 'about' ? 'active-link' : ''} style={view === 'about' ? {color: 'var(--primary-teal)'} : {}}>About Us</a>
                     <a href="#careers" onClick={(e) => { e.preventDefault(); handleNavigation('careers'); }} className={view === 'careers' ? 'active-link' : ''} style={view === 'careers' ? {color: 'var(--primary-teal)'} : {}}>Careers</a>
                     <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'contact'); }} className="btn-primary" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>Contact Us</a>
                 </div>
@@ -739,9 +1189,10 @@ function App() {
                     </button>
                 </div>
                 <div className="mobile-menu-links">
-                    <a href="#services" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Services</a>
-                    <a href="#blogs" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'blogs'); }}>Blogs</a>
-                    <a href="#about" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'about'); }}>About Us</a>
+                    <a href="#home" onClick={(e) => { e.preventDefault(); handleNavigation('home'); }}>Home</a>
+                    <a href="#services" onClick={(e) => { e.preventDefault(); handleNavigation('services'); }}>Services</a>
+                    <a href="#blogs" onClick={(e) => { e.preventDefault(); handleNavigation('blogs'); }}>Blogs</a>
+                    <a href="#about" onClick={(e) => { e.preventDefault(); handleNavigation('about'); }}>About Us</a>
                     <a href="#careers" onClick={(e) => { e.preventDefault(); handleNavigation('careers'); }}>Careers</a>
                     <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'contact'); }}>Contact Us</a>
                 </div>
@@ -765,11 +1216,17 @@ function App() {
         )}
 
         {view === 'careers' && <CareersPage />}
+
+        {view === 'services' && <ServicesPage />}
+
+        {view === 'blogs' && <BlogsPage onBlogClick={handleBlogClick} />}
+
+        {view === 'about' && <AboutPage />}
         
         {view === 'blog-detail' && selectedBlog && (
             <BlogDetailPage 
                 blog={selectedBlog} 
-                onBack={() => handleNavigation('home', 'blogs')} 
+                onBack={() => handleNavigation('blogs')} 
             />
         )}
 
@@ -817,9 +1274,9 @@ function App() {
                     <div className="footer-col">
                         <h4>Services</h4>
                         <ul>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Information System Audit</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Forensic Accounting</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('home', 'services'); }}>Virtual CFO</a></li>
+                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('services'); }}>Information System Audit</a></li>
+                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('services'); }}>Forensic Accounting</a></li>
+                            <li><a href="#" onClick={(e) => { e.preventDefault(); handleNavigation('services'); }}>Virtual CFO</a></li>
                         </ul>
                     </div>
                     <div className="footer-col footer-quick-links">
@@ -870,6 +1327,9 @@ function App() {
         >
             <ArrowRightIcon />
         </button>
+
+        {/* Blog Modal */}
+        <BlogModal blog={modalBlog} onClose={() => setModalBlog(null)} />
     </>
   );
 }

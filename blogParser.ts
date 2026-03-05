@@ -5,9 +5,9 @@
 
 export interface BlogPost {
     id: number;
-    date: string;
     title: string;
     summary: string;
+    image: string;
     content: string[];
 }
 
@@ -64,9 +64,9 @@ export function parseMarkdownBlog(markdown: string): BlogPost {
     
     return {
         id: frontmatter.id as number || 0,
-        date: frontmatter.date as string || '',
         title: frontmatter.title as string || '',
         summary: frontmatter.summary as string || '',
+        image: frontmatter.image as string || '',
         content
     };
 }
